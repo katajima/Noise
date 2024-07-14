@@ -21,9 +21,12 @@ GameScene::~GameScene() {
 	delete player_;
 
 	// ワールドトランスフォーム
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-			delete worldTransformBlock;
+	// ポインタの削除
+	for (std::vector<std::vector<WorldTransform*>>& worldTransformBlockLayer : worldTransformBlocks_) {
+		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlockLayer) {
+			for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+				delete worldTransformBlock;
+			}
 		}
 	}
 	worldTransformBlocks_.clear();
@@ -42,33 +45,58 @@ void GameScene::Initialize() {
 
 #pragma region block
 
-
 	noise = new Noise();
 
+	// worldTransformBlocks_のサイズをY軸方向にリサイズ
+	worldTransformBlocks_.resize(kNumBlockVertical);
 
-	
-
-	// 要素数を変更する
-	// 列数を指定（縦方向のブロック数）
-	worldTransformBlocks_.resize(kNumBlockVirtical);
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		// 1列の要素数を設定（横方向のぶ）
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		// 1列の要素数を設定（X方向）
 		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			// 各列の奥行き方向の要素数を設定（Z方向）
+			worldTransformBlocks_[i][j].resize(kNumBlockDepth);
+		}
 	}
 
-		// ブロックの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+	// ブロックの生成
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			float xMap = (float)i / kNumBlockVirtical;
-			float yMap = (float)j / kNumBlockHorizontal;
-			perlin_grid[j][i] = noise->perlin_noise(xMap, yMap);
-			//perlin_grid_size[j][i] = Nomalize(perlin_grid[j][i]) * 2.0f;
-			perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
-			worldTransformBlocks_[i][j] = new WorldTransform();
-			worldTransformBlocks_[i][j]->Initialize();
-			worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
-			worldTransformBlocks_[i][j]->translation_.y = perlin_grid_size[j][i];
-			worldTransformBlocks_[i][j]->translation_.z = kBlockHeight * i;
+			for (uint32_t k = 0; k < kNumBlockDepth; ++k) {
+				float xMap = (float)i / kNumBlockVertical;
+				float zMap = (float)j / kNumBlockHorizontal;
+				perlin_grid[j][i] = noise->perlin_noise(xMap, zMap);
+				perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
+
+				worldTransformBlocks_[j][i][k] = new WorldTransform();
+				worldTransformBlocks_[j][i][k]->Initialize();
+				worldTransformBlocks_[j][i][k]->translation_.x = kBlockWidth * j;
+				worldTransformBlocks_[j][i][k]->translation_.y = perlin_grid_size[j][i] + -float(k);
+				worldTransformBlocks_[j][i][k]->translation_.z = kBlockHeight * i;
+			}
+		}
+	}
+
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (j != kNumBlockHorizontal) {
+
+				perlin_grid_ringt[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j + 1][i]);
+			}
+			if (j != 0) {
+
+				perlin_grid_left[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j - 1][i]);
+			}
+			if (i != kNumBlockVertical) {
+
+				perlin_grid_front[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j][i + 1]);
+			}
+			if (i != 0) {
+
+				perlin_grid_back[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j][i - 1]);
+			}
 		}
 	}
 	// 3Dモデルの生成
@@ -113,39 +141,98 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 
+#pragma region MyRegion
 
 	ImGui::Begin("noise");
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
 			ImGui::Text("%5.2f", perlin_grid[j][i]);
 		}
-		ImGui::Text("\n");
 	}
 	ImGui::End();
 	ImGui::Begin("noise2");
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
 			ImGui::Text("%5.2f", perlin_grid_size[j][i]);
+		}
+	}
+	ImGui::End();
+
+	ImGui::Begin("right");
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			ImGui::Text("%5.2f", perlin_grid_ringt[j][i]);
 		}
 		ImGui::Text("\n");
 	}
 	ImGui::End();
+	ImGui::Begin("left");
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			ImGui::Text("%5.2f", perlin_grid_left[j][i]);
+		}
+		ImGui::Text("\n");
+	}
+	ImGui::End();
+	ImGui::Begin("front");
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			ImGui::Text("%5.2f", perlin_grid_front[j][i]);
+		}
+		ImGui::Text("\n");
+	}
+	ImGui::End();
+	ImGui::Begin("back");
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			ImGui::Text("%5.2f", perlin_grid_back[j][i]);
+		}
+		ImGui::Text("\n");
+	}
+	ImGui::End();
+
+#pragma endregion
+
 	ImGui::Begin("camera");
 	ImGui::DragFloat3("translate", &viewProjection_.translation_.x, 1.0f);
 	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.01f);
 	ImGui::End();
 	if (Input::GetInstance()->TriggerKey(DIK_0)) {
 		// ブロックの生成
-		for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-			for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-				float xMap = (float)i / kNumBlockVirtical;
-				float yMap = (float)j / kNumBlockHorizontal;
-				perlin_grid[j][i] = noise->perlin_noise(xMap, yMap);
-				perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
+		for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 
-				worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
-				worldTransformBlocks_[i][j]->translation_.z = kBlockHeight * i;
-				worldTransformBlocks_[i][j]->translation_.y = perlin_grid_size[j][i];
+			for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+				for (uint32_t k = 0; k < kNumBlockDepth; ++k) {
+					float xMap = (float)i / kNumBlockVertical;
+					float zMap = (float)j / kNumBlockHorizontal;
+					perlin_grid[j][i] = noise->perlin_noise(xMap, zMap);
+					perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
+					worldTransformBlocks_[j][i][k]->translation_.x = kBlockWidth * j;
+					worldTransformBlocks_[j][i][k]->translation_.y = perlin_grid_size[j][i] + -float(k);
+					worldTransformBlocks_[j][i][k]->translation_.z = kBlockHeight * i;
+				}
+			}
+		}
+
+		for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+
+			for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+				if (j != kNumBlockHorizontal) {
+
+					perlin_grid_ringt[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j + 1][i]);
+				}
+				if (j != 0) {
+
+					perlin_grid_left[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j - 1][i]);
+				}
+				if (i != kNumBlockVertical) {
+
+					perlin_grid_front[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j][i + 1]);
+				}
+				if (i != 0) {
+
+					perlin_grid_back[j][i] = noise->neighbor_deviation(perlin_grid_size[j][i], perlin_grid_size[j][i - 1]);
+				}
 			}
 		}
 	}
@@ -159,15 +246,18 @@ void GameScene::Update() {
 	skydome_->Update();
 
 	// ブロックの更新
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-			if (!worldTransformBlock)
-				continue;
-			// アフィン変換
-			worldTransformBlock->matWorld_ = MakeAffineMatrixMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+	for (std::vector<std::vector<WorldTransform*>>& worldTransformBlockLayer : worldTransformBlocks_) {
+		for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlockLayer) {
+			for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+				if (!worldTransformBlock)
+					continue;
 
-			// 定数バッファに転送する
-			worldTransformBlock->TransferMatrix();
+				// アフィン変換
+				worldTransformBlock->matWorld_ = MakeAffineMatrixMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+
+				// 定数バッファに転送する
+				worldTransformBlock->TransferMatrix();
+			}
 		}
 	}
 
@@ -184,9 +274,6 @@ void GameScene::Update() {
 	}
 
 #endif //  _DEBUG
-
-
-	
 
 	if (isDebugCameraActive_) {
 		// デバックカメラの更新
@@ -241,15 +328,38 @@ void GameScene::Draw() {
 	// skydome_->Draw();
 
 	// ブロック描画
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-			if (!worldTransformBlock)
-				continue;
-			//blockModel_->Draw(*worldTransformBlock, viewProjection_);
-			blockGrass->Draw(*worldTransformBlock, viewProjection_);
-		}
-	}
+	countX = 0;
+	countY = 0;
+	countZ = 0;
+	for (const std::vector<std::vector<WorldTransform*>>& worldTransformBlockLayer : worldTransformBlocks_) {
+		++countX;
+		for (const std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlockLayer) {
+			++countZ;
+			for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+				++countY;
+				if (!worldTransformBlock)
+					continue;
+				
+				if (!((countX == 1 || countX == int(kNumBlockHorizontal)) || (countZ == 1 || countZ == int(kNumBlockVertical)))) {
+					if ((countY < perlin_grid_ringt[countX][countZ])) {
+					} else if ((countY <= perlin_grid_left[countX][countZ]+2)) {
+					} else if ((countY <= perlin_grid_front[countX][countZ]+2)) {
+					} else if ((countY <= perlin_grid_front[countX][countZ]+2)) {
+					} else {
 
+						continue;
+					}
+				}
+
+
+				// ブロックの描画
+				blockGrass->Draw(*worldTransformBlock, viewProjection_);
+			}
+			countY = 0;
+		}
+		countZ = 0;
+	}
+	countX = 0;
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 

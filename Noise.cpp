@@ -80,6 +80,16 @@ float Noise::perlin_noise(float x, float y) {
 	return total * 100 / max_value;
 }
 
+
+float Noise::neighbor_deviation(float noise_center, float noise) {
+	
+	// 偏差の計算
+	float deviation = std::abs(noise_center - noise);
+	// 偏差の平均を返す
+	return deviation; //(deviation_right + deviation_left + deviation_up + deviation_down) / 4.0f;
+}
+
+
 void Noise::NoiseImGui() {
 
 	
@@ -95,3 +105,5 @@ void Noise::NoiseImGui() {
 
 
 }
+
+

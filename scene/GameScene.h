@@ -73,7 +73,7 @@ private: // メンバ変数
 
 	// ブロック用のワールドトランスフォーム。
 	// 複数並べるために配列にする
-	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+	std::vector<std::vector<std::vector<WorldTransform*>>> worldTransformBlocks_;
 
 	//デバックカメラ有効
 	bool isDebugCameraActive_ = false;
@@ -91,14 +91,24 @@ private: // メンバ変数
 	const float kBlockWidth = 1.0f;
 	const float kBlockHeight = 1.0f;
 	// 要素数
-	const uint32_t kNumBlockVirtical = 100;
-	const uint32_t kNumBlockHorizontal = 100;
-	const uint32_t kNumBlockDepth = 10; 
+	const uint32_t kNumBlockVertical = 50;   // 例として20を使用
+	const uint32_t kNumBlockHorizontal = 50; // 横方向の要素数（Z軸）
+	const uint32_t kNumBlockDepth = 20;      // 深さ方向の要素数（Y軸）
+
+	int countX = 0;
+	int countY = 0;
+	int countZ = 0;
+
 
 	Noise* noise = nullptr; 
 
-	float perlin_grid[100][100];
-	float perlin_grid_size[100][100];
+	float perlin_grid[50][50];
+	float perlin_grid_size[50][50];
+
+	float perlin_grid_ringt[50][50];
+	float perlin_grid_left[50][50];
+	float perlin_grid_front[50][50];
+	float perlin_grid_back[50][50];
 
 	std::unique_ptr<Model> blockGrass;
 	//int Seed = 1;

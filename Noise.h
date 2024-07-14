@@ -4,7 +4,7 @@
 #include"MathFunctions.h"
 #include<random>
 #include<time.h>
-
+#include <numeric>
 
 class Noise {
 private:
@@ -33,6 +33,9 @@ private:
 	float perlin_noise(float x, float y);
 
 	void NoiseImGui();
+
+	float neighbor_deviation(float noise_center, float noise);
+	
 
 private:
 	float PERSISTENCE = 0.5f; // 揺れ幅
