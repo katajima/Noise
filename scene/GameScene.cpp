@@ -66,7 +66,8 @@ void GameScene::Initialize() {
 			for (uint32_t k = 0; k < kNumBlockDepth; ++k) {
 				float xMap = (float)i / kNumBlockVertical;
 				float zMap = (float)j / kNumBlockHorizontal;
-				perlin_grid[j][i] = noise->perlin_noise(xMap, zMap);
+				perlin_grid[j][i] = noise->perlin_noise2(xMap, zMap);
+				
 				perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
 
 				worldTransformBlocks_[j][i][k] = new WorldTransform();
@@ -117,6 +118,8 @@ void GameScene::Initialize() {
 	// viewProjection_.farZ = 10;
 	viewProjection_.Initialize();
 	viewProjection_.translation_.x = 25;
+	viewProjection_.translation_.y = 55;
+	viewProjection_.rotation_.x = 1.14f;
 	// プレイヤークラス生成
 	player_ = new Player();
 
@@ -206,7 +209,7 @@ void GameScene::Update() {
 
 	setTimer--;
 	if (Input::GetInstance()->TriggerKey(DIK_R) && setTimer <= 0) {
-		setTimer = 40;
+		//setTimer = 40;
 		// ブロックの生成
 		for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 
@@ -214,7 +217,7 @@ void GameScene::Update() {
 				for (uint32_t k = 0; k < kNumBlockDepth; ++k) {
 					float xMap = (float)i / kNumBlockVertical;
 					float zMap = (float)j / kNumBlockHorizontal;
-					perlin_grid[j][i] = noise->perlin_noise(xMap, zMap);
+					perlin_grid[j][i] = noise->perlin_noise2(xMap, zMap);
 					perlin_grid_size[j][i] = float(int(perlin_grid[j][i]) * 1);
 					worldTransformBlocks_[j][i][k]->translation_.x = kBlockWidth * j;
 					worldTransformBlocks_[j][i][k]->translation_.y = perlin_grid_size[j][i] + -float(k);

@@ -10,11 +10,29 @@ class Noise {
 private:
 	// この関数は、入力0 <= t <= 1に対して、0から1までの値の間でスムージングを行います。このスムージング効果により、生成されるパーリンノイズがより自然で滑らかになります。
 	float fade(float t);
+	//3次のスムージングカーブ
+	float fade3Dimension(float t);
+	//4次のスムージングカーブ
+	float fade4Dimension(float t);
+	//6次のスムージングカーブ
+	float fade6Dimension(float t);
+	//イーズイン・イーズアウトカーブ
+	float fadeInOut(float t);
+	//バウンスカーブ（弾性カーブ）
+	float fadeElasticity(float t);
+	//シグモイド関数
+	float fadeSigmoid(float t);
+	//カスタムカーブ（例: 4次のスムージングカーブ）
+	float fadeCustom(float t);
+
+
 	// 線形補間（Linear Interpolation）を行うための関数です。線形補間は、2つの値の間を滑らかに移動するための方法
 	float lerp(float t, float a, float b);
 
 	// ハッシュ値に基づいて座標に対する勾配ベクトルを計算します。これは、パーリンノイズ生成アルゴリズムにおいて、各格子点に対するランダムな勾配ベクトルを生成するために使用されます。
 	float grad(int hash, float x, float y);
+	float grad2(int hash, float x, float y);
+	float grad3(int hash, float x, float y);
 
 	// ハッシュ関数
 	void init_hash(int seed);
@@ -31,6 +49,7 @@ private:
 	public:
 	// 特定の座標におけるパーリンノイズの値を計算するための関数です。この関数は、複数のオクターブを組み合わせて生成されたパーリンノイズを返します。
 	float perlin_noise(float x, float y);
+	float perlin_noise2(float x, float y);
 
 	void NoiseImGui();
 

@@ -14,6 +14,10 @@
 #include"Noise.h"
 #include"camera.h"
 
+const int MaxX = 50;
+const int MaxZ = 50;
+
+
 /// <summary>
 /// ゲームシーン
 /// </summary>
@@ -93,9 +97,9 @@ private: // メンバ変数
 	const float kBlockWidth = 1.0f;
 	const float kBlockHeight = 1.0f;
 	// 要素数
-	const uint32_t kNumBlockVertical = 50;   // 例として20を使用
-	const uint32_t kNumBlockHorizontal = 50; // 横方向の要素数（Z軸）
-	const uint32_t kNumBlockDepth = 20;      // 深さ方向の要素数（Y軸）
+	const uint32_t kNumBlockVertical = MaxZ;   // 例として20を使用
+	const uint32_t kNumBlockHorizontal = MaxX; // 横方向の要素数（Z軸）
+	const uint32_t kNumBlockDepth = 10;      // 深さ方向の要素数（Y軸）
 
 	int countX = 0;
 	int countY = 0;
@@ -105,13 +109,13 @@ private: // メンバ変数
 
 	Noise* noise = nullptr; 
 
-	float perlin_grid[50][50];
-	float perlin_grid_size[50][50];
+	float perlin_grid[MaxZ][MaxX];
+	float perlin_grid_size[MaxZ][MaxX];
 
-	float perlin_grid_ringt[50][50];
-	float perlin_grid_left[50][50];
-	float perlin_grid_front[50][50];
-	float perlin_grid_back[50][50];
+	float perlin_grid_ringt[MaxZ][MaxX];
+	float perlin_grid_left[MaxZ][MaxX];
+	float perlin_grid_front[MaxZ][MaxX];
+	float perlin_grid_back[MaxZ][MaxX];
 
 	std::unique_ptr<Model> blockGrass;
 	std::unique_ptr<Model> blockStone;
