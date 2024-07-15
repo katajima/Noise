@@ -200,7 +200,7 @@ float Noise::perlin_noise2(float x, float y) {
 	float total = 0;
 	float frequency = Frequency;
 	float amplitude = Amplitude;
-	float max_value = 0;
+	float max_value = Max_value;
 
 	for (int i = 0; i < OCTAVES; ++i) {
 		total += noise2(x, y) * amplitude;
@@ -231,14 +231,13 @@ void Noise::NoiseImGui() {
 	init_hash(seed);
 
 	ImGui::Begin("noiseClass");
-	ImGui::DragFloat("Amplitude ", &Amplitude,0.1f);
+	ImGui::DragFloat("Amplitude ", &Amplitude,0.01f);
 	ImGui::DragFloat("Max_value ", &Max_value);
-	//ImGui::DragFloat("PERSISTENCE ", &PERSISTENCE,0.0001f);
-	//ImGui::DragInt("OCTAVES ", &OCTAVES);
+	ImGui::DragFloat("PERSISTENCE ", &PERSISTENCE,0.0001f);
+	ImGui::DragInt("OCTAVES ", &OCTAVES);
 	//ImGui::DragFloat("Frequency ", &Frequency);
 	ImGui::DragInt("Seed ", &Seed);
 	ImGui::End();
-
 
 }
 
