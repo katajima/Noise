@@ -49,6 +49,7 @@ float Noise::noise2(float x, float y) {
 	// 補間をスムーズにするためのカーブを適用
 	float u = fade(x);
 	float v = fade(y);
+
 	// ハッシュテーブルの参照
 	int A = hashT[X] + Y;
 	int B = hashT[X + 1] + Y;

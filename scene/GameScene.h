@@ -101,6 +101,7 @@ private: // メンバ変数
 	int countY = 0;
 	int countZ = 0;
 
+	int setTimer = 0;
 
 	Noise* noise = nullptr; 
 
@@ -115,6 +116,7 @@ private: // メンバ変数
 	std::unique_ptr<Model> blockGrass;
 	std::unique_ptr<Model> blockStone;
 	std::unique_ptr<Model> blockWater;
+	std::unique_ptr<Model> blockSoil;
 	//int Seed = 1;
 
 	Frustum frustum;

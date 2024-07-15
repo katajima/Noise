@@ -105,6 +105,7 @@ void GameScene::Initialize() {
 	blockGrass.reset(Model::CreateFromOBJ("grass", true));
 	blockStone.reset(Model::CreateFromOBJ("stone", true));
 	blockWater.reset(Model::CreateFromOBJ("water", true));
+	blockSoil.reset(Model::CreateFromOBJ("soil", true));
 
 #pragma endregion
 
@@ -202,7 +203,10 @@ void GameScene::Update() {
 	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.01f);
 	ImGui::Text("set [R key]\n");
 	ImGui::End();
-	if (Input::GetInstance()->TriggerKey(DIK_R)) {
+
+	setTimer--;
+	if (Input::GetInstance()->TriggerKey(DIK_R) && setTimer <= 0) {
+		setTimer = 40;
 		// ブロックの生成
 		for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 
@@ -367,8 +371,13 @@ void GameScene::Draw() {
 
 						blockStone->Draw(*worldTransformBlock, viewProjection_);
 					} else {
+						if (countY == 1) {
 
-						blockGrass->Draw(*worldTransformBlock, viewProjection_);
+							blockGrass->Draw(*worldTransformBlock, viewProjection_);
+						} else {
+							blockSoil->Draw(*worldTransformBlock, viewProjection_);
+						}
+
 					}
 					if (perlin_grid_size[countZ][countX] <= 0) {
 						//blockWater->Draw(*worldTransformBlock, viewProjection_);
