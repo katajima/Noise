@@ -103,6 +103,8 @@ void GameScene::Initialize() {
 	blockModel_ = Model::Create();
 
 	blockGrass.reset(Model::CreateFromOBJ("grass", true));
+	blockStone.reset(Model::CreateFromOBJ("stone", true));
+	blockWater.reset(Model::CreateFromOBJ("water", true));
 
 #pragma endregion
 
@@ -137,6 +139,8 @@ void GameScene::Initialize() {
 
 	// 天球初期化
 	skydome_->Initialize(modelSkydome_, &viewProjection_);
+
+
 }
 
 void GameScene::Update() {
@@ -158,46 +162,47 @@ void GameScene::Update() {
 	}
 	ImGui::End();
 
-	ImGui::Begin("right");
+	/*ImGui::Begin("right");
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			ImGui::Text("%5.2f", perlin_grid_ringt[j][i]);
-		}
-		ImGui::Text("\n");
+	    for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+	        ImGui::Text("%5.2f", perlin_grid_ringt[j][i]);
+	    }
+	    ImGui::Text("\n");
 	}
 	ImGui::End();
 	ImGui::Begin("left");
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			ImGui::Text("%5.2f", perlin_grid_left[j][i]);
-		}
-		ImGui::Text("\n");
+	    for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+	        ImGui::Text("%5.2f", perlin_grid_left[j][i]);
+	    }
+	    ImGui::Text("\n");
 	}
 	ImGui::End();
 	ImGui::Begin("front");
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			ImGui::Text("%5.2f", perlin_grid_front[j][i]);
-		}
-		ImGui::Text("\n");
+	    for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+	        ImGui::Text("%5.2f", perlin_grid_front[j][i]);
+	    }
+	    ImGui::Text("\n");
 	}
 	ImGui::End();
 	ImGui::Begin("back");
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			ImGui::Text("%5.2f", perlin_grid_back[j][i]);
-		}
-		ImGui::Text("\n");
+	    for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+	        ImGui::Text("%5.2f", perlin_grid_back[j][i]);
+	    }
+	    ImGui::Text("\n");
 	}
-	ImGui::End();
+	ImGui::End();*/
 
 #pragma endregion
 
 	ImGui::Begin("camera");
 	ImGui::DragFloat3("translate", &viewProjection_.translation_.x, 1.0f);
 	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.01f);
+	ImGui::Text("set [R key]\n");
 	ImGui::End();
-	if (Input::GetInstance()->TriggerKey(DIK_0)) {
+	if (Input::GetInstance()->TriggerKey(DIK_R)) {
 		// ブロックの生成
 		for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 
@@ -240,10 +245,10 @@ void GameScene::Update() {
 	noise->NoiseImGui();
 
 	// プレイヤー更新処理
-	player_->Update();
+	//player_->Update();
 
 	// 天球更新処理
-	skydome_->Update();
+	//skydome_->Update();
 
 	// ブロックの更新
 	for (std::vector<std::vector<WorldTransform*>>& worldTransformBlockLayer : worldTransformBlocks_) {
@@ -275,6 +280,9 @@ void GameScene::Update() {
 
 #endif //  _DEBUG
 
+	
+	frustum.ConstructFrustum(1000.0f, &viewProjection_);
+
 	if (isDebugCameraActive_) {
 		// デバックカメラの更新
 		debugCamera_->Update();
@@ -296,6 +304,9 @@ void GameScene::Draw() {
 
 	// コマンドリストの取得
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
+
+	
+
 
 #pragma region 背景スプライト描画
 	// 背景スプライト描画前処理
@@ -322,7 +333,7 @@ void GameScene::Draw() {
 	// 3Dモデル描画
 
 	// 自キャラの描画
-	player_->Draw();
+	//player_->Draw();
 
 	// スカイドーム描画
 	// skydome_->Draw();
@@ -339,27 +350,37 @@ void GameScene::Draw() {
 				++countY;
 				if (!worldTransformBlock)
 					continue;
-				
-				if (!((countX == 1 || countX == int(kNumBlockHorizontal)) || (countZ == 1 || countZ == int(kNumBlockVertical)))) {
-					if ((countY < perlin_grid_ringt[countX][countZ])) {
-					} else if ((countY <= perlin_grid_left[countX][countZ]+2)) {
-					} else if ((countY <= perlin_grid_front[countX][countZ]+2)) {
-					} else if ((countY <= perlin_grid_front[countX][countZ]+2)) {
+
+				// if (!((countX == 1 || countX == int(kNumBlockHorizontal)) || (countZ == 1 || countZ == int(kNumBlockVertical)))) {
+				if ((countY < perlin_grid_ringt[countX][countZ])) {
+				} else if ((countY <= perlin_grid_left[countX][countZ] + 2)) {
+				} else if ((countY <= perlin_grid_front[countX][countZ] + 2)) {
+				} else if ((countY <= perlin_grid_front[countX][countZ] + 2)) {
+				} else {
+
+					continue;
+				}
+				//}
+				if (frustum.CheckCube(worldTransformBlock, kBlockWidth / 2.0f)) {
+					// ブロックの描画
+					if (countY >= 4) {
+
+						blockStone->Draw(*worldTransformBlock, viewProjection_);
 					} else {
 
-						continue;
+						blockGrass->Draw(*worldTransformBlock, viewProjection_);
+					}
+					if (perlin_grid_size[countZ][countX] <= 0) {
+						//blockWater->Draw(*worldTransformBlock, viewProjection_);
 					}
 				}
-
-
-				// ブロックの描画
-				blockGrass->Draw(*worldTransformBlock, viewProjection_);
 			}
 			countY = 0;
 		}
 		countZ = 0;
 	}
-	countX = 0;
+
+
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 

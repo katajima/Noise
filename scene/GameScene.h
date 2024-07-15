@@ -12,6 +12,7 @@
 #include "WorldTransform.h"
 #include<vector>
 #include"Noise.h"
+#include"camera.h"
 
 /// <summary>
 /// ゲームシーン
@@ -74,6 +75,7 @@ private: // メンバ変数
 	// ブロック用のワールドトランスフォーム。
 	// 複数並べるために配列にする
 	std::vector<std::vector<std::vector<WorldTransform*>>> worldTransformBlocks_;
+	//std::vector<std::vector<WorldTransform*>> worldTransformBlocksWater_;
 
 	//デバックカメラ有効
 	bool isDebugCameraActive_ = false;
@@ -111,5 +113,9 @@ private: // メンバ変数
 	float perlin_grid_back[50][50];
 
 	std::unique_ptr<Model> blockGrass;
+	std::unique_ptr<Model> blockStone;
+	std::unique_ptr<Model> blockWater;
 	//int Seed = 1;
+
+	Frustum frustum;
 };
